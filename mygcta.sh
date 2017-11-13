@@ -23,6 +23,8 @@ trap 'echo removing temporary files; rm $tmp $tmp_pheno $tmp_qcovar $tmp_covar $
 pca=
 out=gcta
 
+cmd=$1
+shift
 while [[ $# -gt 0 ]]
 do
 	key="$1"
@@ -159,5 +161,6 @@ eval "$cmd"
 
 if [[ -n "$pca" && -f $out.eigenvec ]]; then
 	pca=$(( $(head -1 $out.eigenvec | awk '{print NF}') - 2 ))
-	sed -i "1iFID IID $(seq -f PC%g -s ' ' 1 $pca)" $out.eigenvec
+	perl -i -lpe 'if ($.==1){print join " ", ("FID", "IID", map {"PC".$_} 1..'"$pca"');}' \
+		$out.eigenvec
 fi
