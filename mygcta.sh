@@ -23,6 +23,9 @@ trap 'echo removing temporary files; rm $tmp $tmp_pheno $tmp_qcovar $tmp_covar $
 pca=
 out=gcta
 
+echo "original command:"
+echo $@
+
 cmd=$1
 shift
 while [[ $# -gt 0 ]]
@@ -156,6 +159,7 @@ if [[ $ng -ne 0 ]]; then
 fi
 cmd="$cmd --out $out"
 
+echo "new command:"
 echo "$cmd"
 eval "$cmd"
 
