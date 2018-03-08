@@ -7,9 +7,9 @@
 
 set -e
 
-if mktemp --version >& grep -q GNU; then
+if mktemp --version 2>&1 | grep -q GNU; then
     mktemp=mktemp
-elif gmktemp --version >& grep -q GNU; then
+elif gmktemp --version 2>&1 | grep -q GNU; then
     mktemp=gmktemp
 else
     echo "Error: no GNU mktemp found in the system" >&2 && exit 1
