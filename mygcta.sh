@@ -26,7 +26,7 @@ pca=
 out=gcta
 
 echo "original command:"
-echo $@
+echo "$@"
 
 cmd=$1
 shift
@@ -40,20 +40,43 @@ do
 			pheno=$file
 		else
 		    if [[ $np -eq 1 ]]; then
-		        cat $pheno > $tmp_pheno
+		        cat "$pheno" > "$tmp_pheno"
 		        pheno=$tmp_pheno
 		    fi
 			awk 'NR == FNR {
 				k[$1, $2]=$0
+				NF1=NF
 				next
+			}
+			{
+				NF2=NF
 			}
 			($1, $2) in k {
 				printf "%s", k[$1, $2]
 				for (i=3; i<=NF; i++)
 					printf " %s", $i
 				print ""
-			}' $tmp_pheno $file > $tmp
-			cp $tmp $tmp_pheno
+				delete k[$1, $2]
+				next
+			}
+			{
+				printf "%s %s", $1, $2
+				for (i=3; i<=NF1; i++)
+					printf " NA"
+				for (i=3; i<=NF; i++)
+					printf " %s", $i
+				print ""
+				next
+			}
+			END {
+				for (j in k) {
+					printf "%s", k[j]
+					for (i=3; i<=NF2; i++)
+						printf " NA"
+					print ""
+				}
+			}' "$tmp_pheno" "$file" > "$tmp"
+			cp "$tmp" "$tmp_pheno"
 		fi
 		shift # past argument
 		((++np))
@@ -64,7 +87,7 @@ do
 			qcovar=$file
 		else
 		    if [[ $nq -eq 1 ]]; then
-		        cat $qcovar > $tmp_qcovar
+		        cat "$qcovar" > "$tmp_qcovar"
 		        qcovar=$tmp_qcovar
 		    fi
 			awk 'NR == FNR {
@@ -76,8 +99,8 @@ do
 				for (i=3; i<=NF; i++)
 					printf " %s", $i
 				print ""
-			}' $tmp_qcovar $file > $tmp
-			cp $tmp $tmp_qcovar
+			}' "$tmp_qcovar" "$file" > "$tmp"
+			cp "$tmp" "$tmp_qcovar"
 		fi
 		shift # past argument
 		((++nq))
@@ -88,7 +111,7 @@ do
 		    covar=$file
 		else
 		    if [[ $nc -eq 1 ]]; then
-		        cat $covar > $tmp_covar
+		        cat "$covar" > "$tmp_covar"
 		        covar=$tmp_covar
 		    fi
 			awk 'NR == FNR {
@@ -100,8 +123,8 @@ do
 				for (i=3; i<=NF; i++)
 					printf " %s", $i
 				print ""
-			}' $tmp_covar $file > $tmp
-			cp $tmp $tmp_covar
+			}' "$tmp_covar" "$file" > "$tmp"
+			cp "$tmp" "$tmp_covar"
 		fi
 		shift # past argument
 		((++nc))
@@ -112,7 +135,7 @@ do
 		    gxe=$file
 		else
 		    if [[ $nc -eq 1 ]]; then
-		        cat $gxe > $tmp_gxe
+		        cat "$gxe" > "$tmp_gxe"
 		        gxe=$tmp_gxe
 		    fi
 			awk 'NR == FNR {
@@ -124,8 +147,8 @@ do
 				for (i=3; i<=NF; i++)
 					printf " %s", $i
 				print ""
-			}' $tmp_gxe $file > $tmp
-			cp $tmp $tmp_gxe
+			}' "$tmp_gxe" "$file" > "$tmp"
+			cp "$tmp" "$tmp_gxe"
 		fi
 		shift # past argument
 		((++ng))
@@ -165,8 +188,8 @@ echo "new command:"
 echo "$cmd"
 eval "$cmd"
 
-if [[ -n "$pca" && -f $out.eigenvec ]]; then
-	pca=$(( $(head -1 $out.eigenvec | awk '{print NF}') - 2 ))
+if [[ -n "$pca" && -f "$out".eigenvec ]]; then
+	pca=$(( $(head -1 "$out".eigenvec | awk '{print NF}') - 2 ))
 	perl -i -lpe 'if ($.==1){print join " ", ("FID", "IID", map {"PC".$_} 1..'"$pca"');}' \
-		$out.eigenvec
+		"$out".eigenvec
 fi
